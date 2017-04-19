@@ -90,7 +90,7 @@ RSpec.describe 'Items API' do
 
       it 'updates the person' do
         updated_person = Person.find(id)
-        expect(updated_person.name).to match(/Mozart/)
+        expect(updated_person.name).to match("Bach")
       end
     end
 
