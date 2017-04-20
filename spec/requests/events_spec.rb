@@ -1,11 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe 'Events API', type: :request do
-  let!(:events) { create_list(:event, 10) }
+  let!(:user) { create(:user)}
+  let!(:events) { create_list(:event, 10, created_by: user.id) }
   let(:event_id) { events.first.id }
+  let(:headers) { valid_headers }
 
   describe 'GET /events' do
-    before { get '/events' }
+    before { get '/events', params: {}, headers: headers }
 
     it 'returns events' do
       expect(json).not_to be_empty
@@ -18,7 +20,7 @@ RSpec.describe 'Events API', type: :request do
   end
 
   describe 'GET /events/:id' do
-    before { get "/events/#{event_id}" }
+    before { get "/events/#{event_id}", params: {}, headers: headers }
 
     context 'when the record exists' do
       it 'returns the event' do
@@ -45,10 +47,12 @@ RSpec.describe 'Events API', type: :request do
   end
 
   describe 'POST /events' do
-    let(:valid_attributes) { {name: "Super Show"} }
+    let(:valid_attributes) do
+       {name: "Super Show", created_by: user.id.to_s}.to_json
+    end
 
     context 'when the request is valid' do
-      before { post '/events', params: valid_attributes }
+      before { post '/events',  params: valid_attributes, headers: headers }
 
       it 'creates a event' do
         expect(json['name']).to eq('Super Show')
@@ -60,7 +64,8 @@ RSpec.describe 'Events API', type: :request do
     end
 
     context 'when the request is invalid' do
-      before { post '/events', params: { }}
+      let(:valid_attributes) { { name: nil }.to_json }
+      before { post '/events', params: valid_attributes, headers: headers}
 
       it 'returns status code 422' do
         expect(response).to have_http_status(422)
@@ -69,10 +74,10 @@ RSpec.describe 'Events API', type: :request do
   end
 
   describe 'PUT /events/:id' do
-    let(:valid_attributes) { {name: "Less Super Show"} }
+    let(:valid_attributes) { {name: "Less Super Show"}.to_json  }
 
     context 'when the record exists' do
-      before { put "/events/#{event_id}", params: valid_attributes }
+      before { put "/events/#{event_id}", params: valid_attributes, headers: headers }
 
       it 'updates the record' do
         expect(response.body).to be_empty
@@ -85,7 +90,7 @@ RSpec.describe 'Events API', type: :request do
   end
 
   describe 'DELETE /events/:id' do
-    before { delete "/events/#{event_id}" }
+    before { delete "/events/#{event_id}", params: {}, headers: headers }
 
     it 'returns status code 204' do
       expect(response).to have_http_status(204)

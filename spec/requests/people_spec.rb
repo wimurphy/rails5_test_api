@@ -2,14 +2,16 @@ require 'rails_helper'
 
 RSpec.describe 'Items API' do
   # Initialize the test data
-  let!(:event) { create(:event) }
+  let!(:event) { create(:event, created_by: user.id) }
   let!(:people) { create_list(:person, 20, event_id: event.id) }
   let(:event_id) { event.id }
   let(:id) { people.first.id }
+  let(:user) { create(:user) }
+  let(:headers) { valid_headers }
 
   # Test suite for GET /events/:event_id/people
   describe 'GET /events/:event_id/people' do
-    before { get "/events/#{event_id}/people" }
+    before { get "/events/#{event_id}/people", params: {}, headers: headers }
 
     context 'when event exists' do
       it 'returns status code 200' do
@@ -33,7 +35,7 @@ RSpec.describe 'Items API' do
 
   # Test suite for GET /events/:event_id/people/:id
   describe 'GET /events/:event_id/people/:id' do
-    before { get "/events/#{event_id}/people/#{id}" }
+    before { get "/events/#{event_id}/people/#{id}", params: {}, headers: headers }
 
     context 'when event person exists' do
       it 'returns status code 200' do
@@ -57,10 +59,10 @@ RSpec.describe 'Items API' do
 
   # Test suite for PUT /events/:event_id/people
   describe 'POST /events/:event_id/people' do
-    let(:valid_attributes) {  { name: 'Mozart', company: 'Music Is Us', email: 'wolfgang@mozart.com' } }
+    let(:valid_attributes) {  { name: 'Mozart', company: 'Music Is Us', email: 'wolfgang@mozart.com' }.to_json }
 
     context 'when request attributes are valid' do
-      before { post "/events/#{event_id}/people", params: valid_attributes }
+      before { post "/events/#{event_id}/people", params: valid_attributes, headers: headers }
 
       it 'returns status code 201' do
         expect(response).to have_http_status(201)
@@ -68,7 +70,7 @@ RSpec.describe 'Items API' do
     end
 
     context 'when an invalid request' do
-      before { post "/events/#{event_id}/people", params: {} }
+      before { post "/events/#{event_id}/people", params: {}, headers: headers }
 
       it 'returns status code 422' do
         expect(response).to have_http_status(422)
@@ -79,9 +81,9 @@ RSpec.describe 'Items API' do
 
   # Test suite for PUT /events/:event_id/people/:id
   describe 'PUT /events/:event_id/people/:id' do
-    let(:valid_attributes) { { name: 'Bach', company: 'Music Is Us', email: 'johann@bach.com' } }
+    let(:valid_attributes) { { name: 'Bach' }.to_json  }
 
-    before { put "/events/#{event_id}/people/#{id}", params: valid_attributes }
+    before { put "/events/#{event_id}/people/#{id}", params: valid_attributes, headers: headers }
 
     context 'when person exists' do
       it 'returns status code 204' do
@@ -106,7 +108,7 @@ RSpec.describe 'Items API' do
 
   # Test suite for DELETE /events/:id
   describe 'DELETE /events/:id' do
-    before { delete "/events/#{event_id}/people/#{id}" }
+    before { delete "/events/#{event_id}/people/#{id}", params: {}, headers: headers }
 
     it 'returns status code 204' do
       expect(response).to have_http_status(204)

@@ -3,13 +3,13 @@ class EventsController < ApplicationController
 
   # GET /events
   def index
-    @events = Event.all
+    @events = current_user.events
     json_response(@events)
   end
 
   # POST /events
   def create
-    @event = Event.create!(event_params)
+    @event = current_user.events.create!(event_params)
     json_response(@event, :created)
   end
 
